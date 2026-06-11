@@ -1,0 +1,1638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Restaurant Revival — Free Restaurant Assessment</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<style>
+@media print {
+  header, #screen-stage, #screen-questions, #screen-loading, .cta-card, .restart-wrap, .btn-download { display: none !important; }
+  body { background: #fff !important; color: #1C1C1E !important; }
+  .app { padding: 0 !important; max-width: 100% !important; }
+  #screen-result { display: block !important; }
+  .result-headline, .diag-title { color: #1C1C1E !important; }
+  .result-sub, .diag-desc, .finding-text, .score-label, .score-pct { color: #3D3A35 !important; }
+  .result-category-badge { border: 1px solid #C9A84C !important; color: #9A7A32 !important; background: #FDF6E3 !important; }
+  .q-card, .diagnosis-card { background: #F8F6F2 !important; border: 1px solid #ddd !important; }
+  .diagnosis-top { border-bottom: 1px solid #ddd !important; }
+  .score-track { background: #eee !important; }
+  .recovery-card { background: #FDF6E3 !important; border: 1px solid #C9A84C !important; }
+  .recovery-amount { color: #9A7A32 !important; }
+  .recovery-label, .recovery-sub { color: #555 !important; }
+  .findings-label { color: #888 !important; }
+  .score-bar-fill { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .print-header { display: block !important; text-align: center; padding: 1.5rem 0 1rem; border-bottom: 2px solid #C9A84C; margin-bottom: 1.5rem; }
+  .print-header h1 { font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; color: #1C1C1E; }
+  .print-header p { font-size: 0.8rem; color: #888; margin-top: 0.25rem; }
+  .print-footer { display: block !important; text-align: center; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #ddd; font-size: 0.75rem; color: #aaa; }
+}
+@media screen { .print-header, .print-footer { display: none; } }
+</style>
+<style>
+  :root {
+    --gold-light: #F0C96A;
+    --gold:       #C9A84C;
+    --gold-dark:  #9A7A32;
+    --white:      #FFFFFF;
+    --off-white:  #F8F6F2;
+    --slate:      #1C1C1E;
+    --slate-mid:  #2D2D30;
+    --slate-soft: #3A3A3E;
+    --muted:      #8A8A90;
+    --border:     rgba(201,168,76,0.22);
+    --radius:     12px;
+
+    --cat-p: #C9A84C;
+    --cat-l: #C0673A;
+    --cat-g: #3A7AC0;
+    --cat-o: #5A9E5A;
+    --cat-s: #9B6CC9;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--slate);
+    color: var(--white);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .hidden { display: none !important; }
+
+  /* HEADER */
+  header {
+    width: 100%;
+    background: var(--slate);
+    border-bottom: 1px solid var(--border);
+    padding: 1.1rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .logo-wrap { display: flex; align-items: center; gap: 0.9rem; }
+  .logo-text { display: flex; flex-direction: column; line-height: 1; }
+  .logo-top {
+    font-family: 'Inter', sans-serif;
+    font-weight: 300;
+    font-size: 0.75rem;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.55);
+  }
+  .logo-bottom {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 700;
+    font-size: 1.6rem;
+    letter-spacing: 0.06em;
+    background: linear-gradient(135deg, var(--gold-light), var(--gold), var(--gold-dark));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* APP WRAPPER */
+  .app {
+    width: 100%;
+    max-width: 720px;
+    padding: 2.5rem 1.5rem 4rem;
+    flex: 1;
+  }
+
+  /* STAGE 0 — WHO ARE YOU */
+  #screen-stage { text-align: center; }
+  .intro-badge {
+    display: inline-block;
+    background: rgba(201,168,76,0.12);
+    border: 1px solid var(--border);
+    color: var(--gold-light);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 0.38rem 1rem;
+    border-radius: 100px;
+    margin-bottom: 1.75rem;
+  }
+  .intro-headline {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2rem, 5.5vw, 3rem);
+    font-weight: 700;
+    line-height: 1.15;
+    margin-bottom: 1.1rem;
+    color: var(--white);
+  }
+  .intro-headline em {
+    font-style: normal;
+    background: linear-gradient(120deg, var(--gold-light), var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .intro-sub {
+    color: rgba(255,255,255,0.58);
+    font-size: 0.97rem;
+    line-height: 1.65;
+    max-width: 520px;
+    margin: 0 auto 2.2rem;
+  }
+  .intro-meta {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-bottom: 2.5rem;
+    flex-wrap: wrap;
+  }
+  .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.45);
+  }
+  .meta-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); flex-shrink: 0; }
+
+  /* STAGE SELECT CARDS */
+  .stage-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  .stage-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.25rem;
+    padding: 1.35rem 1.5rem;
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid rgba(255,255,255,0.09);
+    border-radius: var(--radius);
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.18s, border-color 0.18s, transform 0.12s;
+    width: 100%;
+  }
+  .stage-card:hover {
+    background: rgba(201,168,76,0.07);
+    border-color: rgba(201,168,76,0.35);
+    transform: translateX(3px);
+  }
+  .stage-card.selected {
+    background: rgba(201,168,76,0.13);
+    border-color: var(--gold);
+  }
+  .stage-icon {
+    font-size: 1.6rem;
+    flex-shrink: 0;
+    margin-top: 2px;
+    line-height: 1;
+  }
+  .stage-card-text h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 0.25rem;
+  }
+  .stage-card-text p {
+    font-size: 0.84rem;
+    color: rgba(255,255,255,0.5);
+    line-height: 1.5;
+  }
+
+  /* CONTINUE BUTTON */
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: linear-gradient(135deg, var(--gold-light), var(--gold));
+    color: var(--slate);
+    font-weight: 700;
+    font-size: 0.95rem;
+    letter-spacing: 0.03em;
+    padding: 0.95rem 2.2rem;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+    box-shadow: 0 4px 24px rgba(201,168,76,0.28);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(201,168,76,0.38); }
+  .btn-primary:active { transform: translateY(0); }
+  .btn-primary:disabled { opacity: 0.3; cursor: default; transform: none; pointer-events: none; }
+
+  /* PROGRESS */
+  .progress-wrap { margin-bottom: 2.2rem; }
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.6rem;
+  }
+  .progress-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .progress-count {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1rem;
+    color: var(--gold-light);
+    font-weight: 600;
+  }
+  .progress-bar { width: 100%; height: 3px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden; }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold), var(--gold-light));
+    border-radius: 2px;
+    transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  /* STAGE PILL in question screen */
+  .stage-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: rgba(201,168,76,0.1);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 0.3rem 0.85rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold-light);
+    margin-bottom: 1.5rem;
+  }
+
+  /* QUESTION CARD */
+  .q-card {
+    background: var(--slate-mid);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: var(--radius);
+    padding: 2rem 2rem 1.75rem;
+    animation: slideUp 0.3s ease both;
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .q-number {
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 0.75rem;
+  }
+  .q-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1.25rem, 3vw, 1.55rem);
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--white);
+    margin-bottom: 1.6rem;
+  }
+  .options { display: flex; flex-direction: column; gap: 0.65rem; }
+  .option {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
+    padding: 0.9rem 1.1rem;
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid rgba(255,255,255,0.09);
+    border-radius: 9px;
+    cursor: pointer;
+    transition: background 0.18s, border-color 0.18s, transform 0.12s;
+    text-align: left;
+    width: 100%;
+  }
+  .option:hover { background: rgba(201,168,76,0.07); border-color: rgba(201,168,76,0.35); transform: translateX(3px); }
+  .option.selected { background: rgba(201,168,76,0.13); border-color: var(--gold); }
+  .option-letter {
+    flex-shrink: 0;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--muted);
+    transition: background 0.18s, border-color 0.18s, color 0.18s;
+    margin-top: 1px;
+  }
+  .option.selected .option-letter { background: var(--gold); border-color: var(--gold); color: var(--slate); }
+  .option-text { font-size: 0.91rem; line-height: 1.5; color: rgba(255,255,255,0.8); padding-top: 2px; }
+  .option.selected .option-text { color: var(--white); }
+
+  /* NAV */
+  .q-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; }
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.15);
+    color: rgba(255,255,255,0.5);
+    font-size: 0.85rem;
+    font-weight: 500;
+    padding: 0.65rem 1.25rem;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: border-color 0.18s, color 0.18s;
+  }
+  .btn-ghost:hover { border-color: rgba(255,255,255,0.35); color: var(--white); }
+  .btn-ghost:disabled { opacity: 0.2; cursor: default; pointer-events: none; }
+  .btn-next {
+    background: linear-gradient(135deg, var(--gold-light), var(--gold));
+    color: var(--slate);
+    font-weight: 700;
+    font-size: 0.88rem;
+    padding: 0.65rem 1.6rem;
+    border-radius: 7px;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.18s, transform 0.15s;
+    box-shadow: 0 2px 14px rgba(201,168,76,0.25);
+  }
+  .btn-next:disabled { opacity: 0.3; cursor: default; transform: none; pointer-events: none; }
+  .btn-next:not(:disabled):hover { transform: translateY(-1px); }
+
+  /* LOADING */
+  #screen-loading { text-align: center; padding: 3rem 0; }
+  .spinner {
+    width: 48px; height: 48px;
+    border: 3px solid rgba(201,168,76,0.15);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+    margin: 0 auto 1.5rem;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { font-family: 'Cormorant Garamond', serif; font-size: 1.35rem; color: rgba(255,255,255,0.7); font-weight: 600; }
+  .loading-sub { font-size: 0.82rem; color: var(--muted); margin-top: 0.5rem; }
+
+  /* RESULTS */
+  #screen-result { animation: slideUp 0.4s ease both; }
+  .result-header { text-align: center; margin-bottom: 2rem; }
+  .result-badge-wrap { margin-bottom: 1.25rem; }
+  .result-category-badge {
+    display: inline-block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 0.38rem 1rem;
+    border-radius: 100px;
+  }
+  .result-headline {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1.6rem, 4vw, 2.2rem);
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 0.75rem;
+  }
+  .result-sub { color: rgba(255,255,255,0.58); font-size: 0.92rem; line-height: 1.6; max-width: 540px; margin: 0 auto; }
+
+  /* SCORE BARS */
+  .score-section { margin-bottom: 2rem; }
+  .score-title {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1rem;
+  }
+  .score-bars { display: flex; flex-direction: column; gap: 0.75rem; }
+  .score-row { display: flex; align-items: center; gap: 1rem; }
+  .score-label { font-size: 0.8rem; color: rgba(255,255,255,0.65); width: 130px; flex-shrink: 0; }
+  .score-track { flex: 1; height: 7px; background: rgba(255,255,255,0.07); border-radius: 4px; overflow: hidden; }
+  .score-bar-fill { height: 100%; border-radius: 4px; width: 0; transition: width 1s cubic-bezier(0.4,0,0.2,1) 0.3s; }
+  .score-pct { font-size: 0.78rem; font-weight: 600; color: rgba(255,255,255,0.55); width: 36px; text-align: right; }
+
+  /* DIAGNOSIS CARD */
+  .diagnosis-card {
+    background: var(--slate-mid);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+    border: 1px solid rgba(255,255,255,0.07);
+  }
+  .diagnosis-top { padding: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .diag-label { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 0.5rem; }
+  .diag-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 0.6rem;
+    line-height: 1.25;
+  }
+  .diag-desc { font-size: 0.88rem; color: rgba(255,255,255,0.58); line-height: 1.6; }
+  .diagnosis-body { padding: 1.5rem; }
+  .findings-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1rem;
+  }
+  .finding-item { display: flex; gap: 0.75rem; margin-bottom: 1rem; align-items: flex-start; }
+  .finding-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .finding-text { font-size: 0.87rem; color: rgba(255,255,255,0.72); line-height: 1.55; }
+  .finding-text strong { color: var(--white); }
+
+  /* OPPORTUNITY CARD */
+  .recovery-card {
+    background: rgba(201,168,76,0.08);
+    border: 1px solid rgba(201,168,76,0.25);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+  .recovery-label { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.5rem; }
+  .recovery-amount { font-family: 'Cormorant Garamond', serif; font-size: 2.4rem; font-weight: 700; color: var(--gold-light); line-height: 1; margin-bottom: 0.4rem; }
+  .recovery-sub { font-size: 0.8rem; color: rgba(255,255,255,0.45); }
+
+  /* CTA */
+  .cta-card {
+    background: var(--slate-mid);
+    border: 1px solid rgba(201,168,76,0.3);
+    border-radius: var(--radius);
+    padding: 2rem;
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+  .cta-headline { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; font-weight: 700; color: var(--white); margin-bottom: 0.75rem; }
+  .cta-sub { font-size: 0.88rem; color: rgba(255,255,255,0.55); line-height: 1.6; margin-bottom: 1.5rem; max-width: 480px; margin-left: auto; margin-right: auto; }
+  .cta-price { margin-bottom: 1.25rem; }
+  .cta-amount { font-family: 'Cormorant Garamond', serif; font-size: 2.2rem; font-weight: 700; color: var(--gold-light); }
+  .cta-period { font-size: 0.82rem; color: var(--muted); margin-left: 0.5rem; }
+  .btn-cta {
+    background: linear-gradient(135deg, var(--gold-light), var(--gold));
+    color: var(--slate);
+    font-weight: 700;
+    font-size: 0.95rem;
+    padding: 1rem 2.5rem;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 4px 24px rgba(201,168,76,0.3);
+    display: block;
+    width: 100%;
+    margin-bottom: 1rem;
+  }
+  .btn-cta:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(201,168,76,0.4); }
+  .cta-guarantee { font-size: 0.78rem; color: rgba(255,255,255,0.35); }
+
+  /* RESTART */
+  .restart-wrap { text-align: center; margin-top: 1.5rem; }
+  .btn-restart {
+    background: transparent;
+    border: none;
+    color: rgba(255,255,255,0.3);
+    font-size: 0.82rem;
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    transition: color 0.18s;
+    text-decoration: underline;
+  }
+  .btn-restart:hover { color: rgba(255,255,255,0.6); }
+
+  /* CONTACT FORM */
+  .contact-form {
+    background: var(--slate-mid);
+    border: 1px solid rgba(201,168,76,0.2);
+    border-radius: var(--radius);
+    padding: 1.75rem;
+    margin-bottom: 1.25rem;
+  }
+  .contact-form-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 0.35rem;
+  }
+  .contact-form-sub {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-bottom: 1.25rem;
+    line-height: 1.5;
+  }
+  .form-row { display: flex; flex-direction: column; gap: 0.65rem; }
+  .form-field { display: flex; flex-direction: column; gap: 0.35rem; }
+  .form-field label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .form-field input {
+    background: rgba(255,255,255,0.06);
+    border: 1.5px solid rgba(255,255,255,0.12);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    color: var(--white);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    transition: border-color 0.18s;
+    outline: none;
+    width: 100%;
+  }
+  .form-field input::placeholder { color: rgba(255,255,255,0.25); }
+  .form-field input:focus { border-color: var(--gold); }
+
+  /* EMAIL STATUS */
+  .email-status {
+    font-size: 0.78rem;
+    text-align: center;
+    padding: 0.6rem;
+    border-radius: 6px;
+    margin-top: 0.75rem;
+    display: none;
+  }
+  .email-status.sending { background: rgba(201,168,76,0.1); color: var(--gold-light); display: block; }
+  .email-status.success { background: rgba(90,158,90,0.15); color: #90CC90; display: block; }
+  .email-status.error { background: rgba(192,103,58,0.15); color: #E8906A; display: block; }
+
+  /* DOWNLOAD BUTTON */
+  .btn-download {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    background: transparent;
+    border: 1px solid rgba(201,168,76,0.35);
+    color: var(--gold-light);
+    font-size: 0.88rem;
+    font-weight: 600;
+    padding: 0.85rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.18s, border-color 0.18s;
+    margin-top: 0.75rem;
+    font-family: 'Inter', sans-serif;
+  }
+  .btn-download:hover { background: rgba(201,168,76,0.08); border-color: var(--gold); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-wrap">
+    <div class="logo-text">
+      <span class="logo-top">Restaurant</span>
+      <span class="logo-bottom">Revival</span>
+    </div>
+  </div>
+</header>
+
+<div class="app">
+
+  <!-- SCREEN 0 — STAGE SELECTOR -->
+  <div id="screen-stage">
+    <div class="intro-badge">Free · 3 Minutes · No Email Required</div>
+    <h1 class="intro-headline">Where does your restaurant<br>stand <em>right now?</em></h1>
+    <p class="intro-sub">Answer 9 quick questions and get a personalized breakdown of your biggest growth opportunity — whether you're just getting started, working through challenges, or ready to scale.</p>
+    <div class="intro-meta">
+      <span class="meta-item"><span class="meta-dot"></span>9 questions</span>
+      <span class="meta-item"><span class="meta-dot"></span>Personalized results</span>
+      <span class="meta-item"><span class="meta-dot"></span>Instant + free</span>
+    </div>
+
+    <p style="font-size:0.78rem;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);margin-bottom:1.25rem;">First, tell us where you are:</p>
+
+    <div class="stage-grid">
+      <button class="stage-card" onclick="selectStage('startup')" id="stage-startup">
+        <span class="stage-icon">🌱</span>
+        <div class="stage-card-text">
+          <h3>Pre-Opening or Year 1</h3>
+          <p>I'm planning to open, or I've been open less than a year and want to build a strong foundation from the start.</p>
+        </div>
+      </button>
+      <button class="stage-card" onclick="selectStage('struggling')" id="stage-struggling">
+        <span class="stage-icon">🔧</span>
+        <div class="stage-card-text">
+          <h3>Open and Working Through Challenges</h3>
+          <p>I'm operational but dealing with profit problems, staffing issues, rising costs, or inconsistency I can't seem to fix.</p>
+        </div>
+      </button>
+      <button class="stage-card" onclick="selectStage('scaling')" id="stage-scaling">
+        <span class="stage-icon">🚀</span>
+        <div class="stage-card-text">
+          <h3>Doing Well and Ready to Scale</h3>
+          <p>My restaurant is profitable and running well. I want to grow revenue, open additional locations, or build the business without depending on me personally.</p>
+        </div>
+      </button>
+    </div>
+
+    <button class="btn-primary" id="btn-start" onclick="startAssessment()" disabled style="margin-top:0.5rem;">
+      Start My Assessment <span>→</span>
+    </button>
+  </div>
+
+  <!-- SCREEN 1 — QUESTIONS -->
+  <div id="screen-questions" class="hidden">
+    <div id="stage-pill" class="stage-pill"></div>
+    <div class="progress-wrap">
+      <div class="progress-header">
+        <span class="progress-label">Assessment Progress</span>
+        <span class="progress-count" id="progress-text">1 of 9</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:11%"></div></div>
+    </div>
+    <div class="q-card" id="q-card">
+      <div class="q-number" id="q-number">Question 1</div>
+      <div class="q-text" id="q-text"></div>
+      <div class="options" id="q-options"></div>
+    </div>
+    <div class="q-nav">
+      <button class="btn-ghost" onclick="goBack()" id="btn-back" disabled>← Back</button>
+      <button class="btn-next" onclick="goNext()" id="btn-next" disabled>Next →</button>
+    </div>
+  </div>
+
+  <!-- SCREEN 2 — LOADING -->
+  <div id="screen-loading" class="hidden">
+    <div class="spinner"></div>
+    <div class="loading-text" id="loading-text">Analyzing your restaurant…</div>
+    <div class="loading-sub" id="loading-sub">Reviewing your answers across the key growth pillars</div>
+  </div>
+
+  <!-- SCREEN 3 — RESULT -->
+  <div id="screen-result" class="hidden">
+
+    <!-- Print only header -->
+    <div class="print-header">
+      <h1>Restaurant Revival — Assessment Results</h1>
+      <p id="print-meta"></p>
+    </div>
+
+    <div class="result-header">
+      <div class="result-badge-wrap">
+        <div class="result-category-badge" id="result-badge"></div>
+      </div>
+      <h2 class="result-headline" id="result-headline"></h2>
+      <p class="result-sub" id="result-sub"></p>
+    </div>
+
+    <div class="score-section">
+      <div class="score-title" id="score-section-title">Your Priority Areas</div>
+      <div class="score-bars" id="score-bars"></div>
+    </div>
+
+    <div class="diagnosis-card">
+      <div class="diagnosis-top">
+        <div class="diag-label" id="diag-label"></div>
+        <div class="diag-title" id="diag-title"></div>
+        <div class="diag-desc" id="diag-desc"></div>
+      </div>
+      <div class="diagnosis-body">
+        <div class="findings-label" id="findings-label">What this typically means for your restaurant</div>
+        <div id="diag-findings"></div>
+      </div>
+    </div>
+
+    <div class="recovery-card">
+      <div class="recovery-label" id="recovery-label">Estimated Monthly Opportunity</div>
+      <div class="recovery-amount" id="recovery-amount"></div>
+      <div class="recovery-sub" id="recovery-sub"></div>
+    </div>
+
+    <!-- CONTACT FORM -->
+    <div class="contact-form" id="contact-form-wrap">
+      <div class="contact-form-title">Book your $97 Growth Scorecard</div>
+      <div class="contact-form-sub">Enter your details below — your results will be sent to your consultant automatically so your session is prepared before you arrive.</div>
+      <div class="form-row">
+        <div class="form-field">
+          <label>Your Name</label>
+          <input type="text" id="field-name" placeholder="First and last name" />
+        </div>
+        <div class="form-field">
+          <label>Email Address</label>
+          <input type="email" id="field-email" placeholder="your@email.com" />
+        </div>
+        <div class="form-field">
+          <label>Restaurant Name</label>
+          <input type="text" id="field-restaurant" placeholder="Your restaurant's name" />
+        </div>
+      </div>
+      <div id="email-status" class="email-status"></div>
+    </div>
+
+    <div class="cta-card">
+      <div class="cta-headline" id="cta-headline">Get Your Full Profit Scorecard™</div>
+      <p class="cta-sub" id="cta-sub">In a 45-minute working session, we'll go through your actual numbers, score your operation across all key growth pillars, and hand you a written action plan — with the dollar value of every opportunity clearly stated.</p>
+      <div class="cta-price">
+        <span class="cta-amount">$97</span>
+        <span class="cta-period">one-time · no commitment</span>
+      </div>
+      <button class="btn-cta" onclick="bookScorecard()">Book My Growth Scorecard — $97 →</button>
+      <button class="btn-download" onclick="downloadPDF()">⬇ Download My Results as PDF</button>
+      <div class="cta-guarantee" id="cta-guarantee">If I can't identify at least $500/month in profit or revenue opportunity, you get your $97 back.</div>
+    </div>
+
+    <!-- Print footer -->
+    <div class="print-footer">
+      Restaurant Revival · restaurantrevival.com · More Guests. Better Margins. Stronger Teams.
+    </div>
+
+    <div class="restart-wrap">
+      <button class="btn-restart" onclick="restart()">Retake the assessment</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────────────
+// QUESTION BANKS — one per stage
+// Categories: P=Profit/Cost  L=Labor/Team  G=Guest/Growth  O=Operations  S=Strategy/Scale
+// ─────────────────────────────────────────────────────────────────
+
+const questionBanks = {
+
+  // ── STARTUP / PRE-OPENING ──────────────────────────────────────
+  startup: [
+    {
+      text: "Where are you right now in the launch process?",
+      options: [
+        { text: "Still in planning — I have a concept but haven't signed a lease or built financials yet", cat: "S" },
+        { text: "I've signed a lease or I'm in build-out — opening in the next 6 months", cat: "O" },
+        { text: "I've been open less than 6 months and I'm still figuring things out", cat: "P" },
+        { text: "I've been open about a year — guests are coming but profit is unclear", cat: "P" }
+      ]
+    },
+    {
+      text: "How solid is your financial model going into opening?",
+      options: [
+        { text: "I have a rough idea but no formal pro forma or cost breakdown", cat: "S" },
+        { text: "I have startup cost estimates but no ongoing P&L model built out", cat: "P" },
+        { text: "I have projections but I'm not confident they're realistic", cat: "P" },
+        { text: "My financials are solid — the challenge is operational setup, not the numbers", cat: "O" }
+      ]
+    },
+    {
+      text: "How have you thought about your menu pricing?",
+      options: [
+        { text: "I've priced by feel or what competitors charge — no margin math done", cat: "P" },
+        { text: "I know my food costs roughly, but I haven't run full margin analysis", cat: "P" },
+        { text: "I've done the math and I'm confident in my pricing structure", cat: "G" },
+        { text: "Menu is still being developed — this is one of my biggest open questions", cat: "S" }
+      ]
+    },
+    {
+      text: "What's your plan for getting guests in the door when you open?",
+      options: [
+        { text: "Mostly word of mouth and social media — I haven't built a launch marketing plan", cat: "G" },
+        { text: "I have some ideas but nothing structured — I'm hoping the food speaks for itself", cat: "G" },
+        { text: "I'm planning a soft open, grand opening event, and have a local outreach strategy", cat: "G" },
+        { text: "Marketing comes later — right now I need to get the operations right first", cat: "O" }
+      ]
+    },
+    {
+      text: "How are you thinking about staffing and team structure before opening?",
+      options: [
+        { text: "I'll hire as needed — I don't have a staffing model or labor budget yet", cat: "L" },
+        { text: "I know who I need, but I don't have training systems or an onboarding plan built", cat: "L" },
+        { text: "I have a core team in mind but I'm worried about building culture from day one", cat: "L" },
+        { text: "Staffing feels manageable — my concern is whether the operation will be consistent without me", cat: "O" }
+      ]
+    },
+    {
+      text: "What's your biggest fear about the first 90 days after opening?",
+      options: [
+        { text: "Running out of cash before I figure out what works", cat: "P" },
+        { text: "Not getting enough guests through the door fast enough", cat: "G" },
+        { text: "The operation being inconsistent or chaotic when it's actually busy", cat: "O" },
+        { text: "Not being able to manage labor costs as I figure out my actual volume", cat: "L" }
+      ]
+    },
+    {
+      text: "How are you planning to differentiate your restaurant from the competition?",
+      options: [
+        { text: "The food is the differentiator — I believe quality will build the reputation", cat: "G" },
+        { text: "I have a unique concept or niche that isn't being served in my market", cat: "S" },
+        { text: "I'm honestly not sure yet — I know what I want to serve but not how to position it", cat: "S" },
+        { text: "Service and experience — I want to be known for how guests feel, not just the food", cat: "G" }
+      ]
+    },
+    {
+      text: "Do you have documented systems or SOPs ready before you open?",
+      options: [
+        { text: "No — I plan to build those after I see how things go in the first few weeks", cat: "O" },
+        { text: "Partially — I have some recipes and procedures but nothing formally documented", cat: "O" },
+        { text: "Most things are in my head — I'll train people by showing them", cat: "O" },
+        { text: "Yes — I believe systems before opening are critical and I've been building them", cat: "S" }
+      ]
+    },
+    {
+      text: "What would make the first year a success for you?",
+      options: [
+        { text: "Covering all my costs and paying myself something by month 6", cat: "P" },
+        { text: "Building a loyal local customer base that comes back consistently", cat: "G" },
+        { text: "Running a tight, consistent operation that I'm proud of every day", cat: "O" },
+        { text: "Learning enough to know whether this is scalable to a second location", cat: "S" }
+      ]
+    }
+  ],
+
+  // ── STRUGGLING / OPEN WITH CHALLENGES ─────────────────────────
+  struggling: [
+    {
+      text: "When you look at last month's numbers, what bothers you most?",
+      options: [
+        { text: "Revenue feels okay but profit is thin — I don't know where the money goes", cat: "P" },
+        { text: "I'm paying out too much in labor and it's hard to control", cat: "L" },
+        { text: "We're not getting enough new guests — and regulars aren't coming back as often", cat: "G" },
+        { text: "The restaurant runs differently every day — nothing feels consistent", cat: "O" }
+      ]
+    },
+    {
+      text: "How would you describe your food cost situation right now?",
+      options: [
+        { text: "It's higher than it should be and I'm not totally sure why", cat: "P" },
+        { text: "I haven't tracked it closely — I'm too busy managing people issues", cat: "L" },
+        { text: "Food cost is okay, but sales volume is my real problem", cat: "G" },
+        { text: "We waste more than we should — portioning and prep are inconsistent", cat: "O" }
+      ]
+    },
+    {
+      text: "What's your biggest staffing challenge right now?",
+      options: [
+        { text: "I'm over-staffed on slow shifts and it's killing my labor percentage", cat: "P" },
+        { text: "Turnover is high — I'm constantly hiring and training and it never stops", cat: "L" },
+        { text: "My team doesn't upsell or engage guests the way I want them to", cat: "G" },
+        { text: "There's no clear leadership when I'm not there — things fall apart", cat: "O" }
+      ]
+    },
+    {
+      text: "How often do you review your menu's profit performance?",
+      options: [
+        { text: "Rarely or never — I price items based on gut feel", cat: "P" },
+        { text: "I've thought about it but haven't had time with everything else going on", cat: "L" },
+        { text: "I update the menu based on what guests seem to order, not margin data", cat: "G" },
+        { text: "There's no standard process — different cooks make things differently", cat: "O" }
+      ]
+    },
+    {
+      text: "What does your marketing look like right now?",
+      options: [
+        { text: "I do a little on social but I don't know if it's working", cat: "G" },
+        { text: "I have no time for marketing — I'm too deep in daily operations", cat: "O" },
+        { text: "We rely mostly on word of mouth and whatever Google does for us", cat: "G" },
+        { text: "Marketing isn't the issue — profit margins are what's keeping me up at night", cat: "P" }
+      ]
+    },
+    {
+      text: "How many hours per week are you personally working in the restaurant?",
+      options: [
+        { text: "50–60 hours — I'm practically living there", cat: "O" },
+        { text: "60+ hours — I can't step away or things break down", cat: "L" },
+        { text: "40–50 hours, but most of it is putting out fires instead of growing", cat: "O" },
+        { text: "I work reasonable hours — the issue is profitability, not my time", cat: "P" }
+      ]
+    },
+    {
+      text: "If a guest hasn't returned in 60 days, what happens?",
+      options: [
+        { text: "Nothing — we don't track that or have a way to reach out", cat: "G" },
+        { text: "We post on social and hope they see it", cat: "G" },
+        { text: "We focus on new guests rather than winning back old ones", cat: "G" },
+        { text: "Guest retention isn't the focus — operations consistency is the real issue", cat: "O" }
+      ]
+    },
+    {
+      text: "How would you describe your current P&L management?",
+      options: [
+        { text: "I look at it monthly with my accountant but don't act on it week to week", cat: "P" },
+        { text: "I mostly track cash flow — formal P&L management isn't consistent", cat: "P" },
+        { text: "My accountant handles it — I focus on running the restaurant", cat: "O" },
+        { text: "I understand the P&L but the labor line is what I keep watching", cat: "L" }
+      ]
+    },
+    {
+      text: "Six months from now — what would make you feel like things finally turned around?",
+      options: [
+        { text: "I'm making real profit — the business is actually paying me what I deserve", cat: "P" },
+        { text: "I have a reliable team and I'm not the bottleneck anymore", cat: "L" },
+        { text: "The dining room is busy consistently and guests are talking about us", cat: "G" },
+        { text: "Everything runs on systems — consistent, predictable, and less dependent on me", cat: "O" }
+      ]
+    }
+  ],
+
+  // ── SCALING / DOING WELL ───────────────────────────────────────
+  scaling: [
+    {
+      text: "What's the primary growth goal you're focused on right now?",
+      options: [
+        { text: "Growing revenue at this location without proportionally growing my costs", cat: "P" },
+        { text: "Opening a second location and replicating what works here", cat: "S" },
+        { text: "Building a team that runs the business without needing me there daily", cat: "L" },
+        { text: "Increasing my catering, events, or off-premise revenue streams", cat: "G" }
+      ]
+    },
+    {
+      text: "How well does your operation run when you're not there?",
+      options: [
+        { text: "Honestly, things slip — I'm still the key person holding it together", cat: "O" },
+        { text: "My GM handles day-to-day but the standards drop when I'm away long", cat: "L" },
+        { text: "It runs reasonably well — I want to systemize this so I can step back further", cat: "O" },
+        { text: "The operation is strong — my challenge is growth strategy, not daily ops", cat: "S" }
+      ]
+    },
+    {
+      text: "How do you currently think about your menu's profit performance?",
+      options: [
+        { text: "I know we're profitable overall but I haven't optimized by item", cat: "P" },
+        { text: "I review it occasionally but there's no formal menu engineering process", cat: "P" },
+        { text: "Menu mix is good — my opportunity is in increasing average check per guest", cat: "G" },
+        { text: "I want to develop new revenue-generating menu categories or dayparts", cat: "S" }
+      ]
+    },
+    {
+      text: "Where is your biggest untapped revenue opportunity right now?",
+      options: [
+        { text: "Getting existing guests to spend more per visit through upselling and add-ons", cat: "G" },
+        { text: "Catering, private events, or bulk orders I haven't fully developed", cat: "G" },
+        { text: "A second location — I know the model works and want to duplicate it", cat: "S" },
+        { text: "Online ordering, delivery, or ghost kitchen revenue I haven't built yet", cat: "S" }
+      ]
+    },
+    {
+      text: "What does your leadership team look like right now?",
+      options: [
+        { text: "It's mostly me — I need to build out a real management layer below me", cat: "L" },
+        { text: "I have a GM but they're not fully empowered or trained to lead independently", cat: "L" },
+        { text: "I have solid managers — I want to develop them into future leaders or partners", cat: "L" },
+        { text: "The team is strong — I need a growth strategy, not more leadership development", cat: "S" }
+      ]
+    },
+    {
+      text: "How are you currently marketing your restaurant?",
+      options: [
+        { text: "Mostly organic — we have a solid reputation but no deliberate growth engine", cat: "G" },
+        { text: "Social media and occasional promotions — but I want a more strategic approach", cat: "G" },
+        { text: "We have marketing running but I don't have great visibility into what's working", cat: "P" },
+        { text: "I want to invest more in marketing but need to understand the ROI first", cat: "P" }
+      ]
+    },
+    {
+      text: "How do you think about your profit margin at this stage?",
+      options: [
+        { text: "We're profitable but I know there's more margin to recover if we optimize costs", cat: "P" },
+        { text: "Margin is solid — my goal is growing top-line revenue, not cutting costs", cat: "G" },
+        { text: "I haven't done a deep cost analysis in a while — it's probably worth doing", cat: "P" },
+        { text: "Profit is strong here — I want to build the same margin into a second location", cat: "S" }
+      ]
+    },
+    {
+      text: "What's the biggest bottleneck slowing your growth right now?",
+      options: [
+        { text: "I don't have documented systems that a new team or location could follow", cat: "O" },
+        { text: "I don't have the right people in place to manage growth without me", cat: "L" },
+        { text: "Capital — I need a clearer financial picture before I invest in expansion", cat: "P" },
+        { text: "I haven't defined a clear strategy — I'm growing reactively, not intentionally", cat: "S" }
+      ]
+    },
+    {
+      text: "A year from now, what does success look like for your restaurant business?",
+      options: [
+        { text: "Higher profit margins and a business that generates real wealth, not just income", cat: "P" },
+        { text: "A second location open and performing well", cat: "S" },
+        { text: "A leadership team that runs operations so I can focus on growth and vision", cat: "L" },
+        { text: "A recognizable brand with multiple revenue streams and strong community presence", cat: "G" }
+      ]
+    }
+  ]
+};
+
+// ─────────────────────────────────────────────────────────────────
+// RESULT CATEGORIES — per stage
+// ─────────────────────────────────────────────────────────────────
+
+const resultData = {
+
+  startup: {
+    pillars: [
+      { key: 'P', label: 'Financial Foundation' },
+      { key: 'G', label: 'Guest Acquisition' },
+      { key: 'O', label: 'Operations Setup' },
+      { key: 'L', label: 'Team & Staffing' },
+      { key: 'S', label: 'Strategy & Concept' }
+    ],
+    P: {
+      label: "Financial Foundation",
+      color: "#C9A84C",
+      badgeStyle: "background:rgba(201,168,76,0.15);border:1px solid rgba(201,168,76,0.4);color:#F0C96A;",
+      headline: "Your biggest risk is opening without a clear financial roadmap.",
+      sub: "Your answers suggest the financial structure — pricing, cost modeling, and cash flow planning — needs to be locked in before you open. Restaurants that open without solid unit economics rarely survive their first year, not because the concept fails, but because they run out of time to figure it out.",
+      diagLabel: "Primary Priority",
+      diagTitle: "Build Your Financial Foundation First",
+      diagDesc: "Getting your pricing right, your startup costs modeled, and your break-even analysis complete before opening is the single highest-leverage thing you can do. Most new operators skip this and regret it within 90 days of opening.",
+      findings: [
+        { icon: "⚠️", text: "<strong>Pricing by feel is dangerous at launch.</strong> If your menu isn't priced with full margin math — food cost, labor allocation, overhead contribution — you may be losing money on every plate from day one without knowing it." },
+        { icon: "⚠️", text: "<strong>Startup costs almost always run 15–25% over projection.</strong> Building a cash reserve for this isn't pessimism — it's survival planning. Knowing your true break-even before you open changes every decision you make." },
+        { icon: "⚠️", text: "<strong>Week 1 cash flow determines month 3 survival.</strong> Restaurants that open with a financial model and weekly KPI tracking outlast those that wing it by a wide margin." },
+        { icon: "✅", text: "<strong>The good news: you can build this before you open.</strong> A proper pro forma, menu cost analysis, and 90-day cash flow model takes 2–3 working sessions to complete and changes everything about your confidence and decision-making." }
+      ],
+      recovery: "Prevention > Recovery",
+      recoverySub: "getting this right before opening saves $10,000–$30,000 in avoidable losses in your first year",
+      ctaHeadline: "Build Your Launch Financial Model",
+      ctaSub: "In a 45-minute working session, we'll build your break-even analysis, price your menu for real margins, and create a 90-day cash flow model — so you open with clarity, not guesswork.",
+      guarantee: "If we can't identify at least 2 pricing or cost issues that would have hurt your launch, you get your $97 back."
+    },
+    G: {
+      label: "Guest Acquisition",
+      color: "#3A7AC0",
+      badgeStyle: "background:rgba(58,122,192,0.15);border:1px solid rgba(58,122,192,0.4);color:#7AB0E8;",
+      headline: "You need a guest acquisition plan before you open, not after.",
+      sub: "Your answers point to a launch marketing gap. Great food alone won't fill your dining room in the first 90 days — especially in a competitive local market. The restaurants that build strong openings are the ones that build their audience before they open.",
+      diagLabel: "Primary Priority",
+      diagTitle: "Build Your Pre-Opening Marketing Engine",
+      diagDesc: "The best time to start building a guest base is 60–90 days before you open. Social following, local press, email list, and community presence built now translates directly into revenue in week one.",
+      findings: [
+        { icon: "⚠️", text: "<strong>Your soft open is your most important marketing event.</strong> Most new restaurants underplan their opening sequence. A structured soft open, preview events, and grand opening strategy dramatically changes your first-month traffic." },
+        { icon: "⚠️", text: "<strong>Google My Business is your #1 local marketing asset.</strong> Claiming, optimizing, and starting to collect reviews before you open positions you ahead of competitors who've been open for years." },
+        { icon: "⚠️", text: "<strong>Email and SMS lists built before opening are priceless.</strong> 100 pre-registered guests who show up in week one is worth more than 1,000 social media followers who might see a post." },
+        { icon: "✅", text: "<strong>Pre-opening marketing is high ROI and low cost.</strong> A structured 60-day pre-opening campaign built around local community, social media, and email capture can put 200–500 pre-interested guests in your pipeline before you serve a single plate." }
+      ],
+      recovery: "200–500 pre-interested guests",
+      recoverySub: "reachable before opening day with a structured 60-day launch marketing plan",
+      ctaHeadline: "Build Your Pre-Opening Guest Pipeline",
+      ctaSub: "In a 45-minute session, we'll map out your entire launch marketing plan — pre-opening build-up, soft open strategy, grand opening event, and first 90-day guest acquisition calendar.",
+      guarantee: "If we can't identify at least 3 high-impact marketing moves you haven't taken yet, you get your $97 back."
+    },
+    O: {
+      label: "Operations Setup",
+      color: "#5A9E5A",
+      badgeStyle: "background:rgba(90,158,90,0.15);border:1px solid rgba(90,158,90,0.4);color:#90CC90;",
+      headline: "Build your systems before you open — not while you're drowning in service.",
+      sub: "Your answers reveal that operational infrastructure needs to be your priority. Restaurants that open without documented procedures, training systems, and leadership structure spend their first year in constant firefighting mode. You have the rare opportunity to build it right from the start.",
+      diagLabel: "Primary Priority",
+      diagTitle: "Build Your Operational Foundation",
+      diagDesc: "Systems built before opening are worth 10x what they're worth after opening, because once you're in service, there's never time. Every hour you invest in SOPs, training programs, and leadership frameworks now pays dividends every single week you're open.",
+      findings: [
+        { icon: "⚠️", text: "<strong>Every procedure that lives only in your head is a business risk.</strong> If you get sick, need a day off, or want to hire a manager, you need documented systems. Opening without them means the first chaotic month becomes your permanent operating standard." },
+        { icon: "⚠️", text: "<strong>Training without a system produces inconsistency from day one.</strong> Your first hires set the culture and standard for everyone who comes after. An onboarding program built before opening makes every future hire faster and better." },
+        { icon: "⚠️", text: "<strong>Opening chaos is normal — but systems reduce it dramatically.</strong> Restaurants with documented opening/closing procedures, line checks, and recipe standards run noticeably tighter and calmer from week one." },
+        { icon: "✅", text: "<strong>You have the rarest advantage: time before opening.</strong> Most restaurant owners wish they'd built systems first. You still can. A basic operations playbook — recipes, procedures, checklists, training guide — can be built in 2–3 focused sessions." }
+      ],
+      recovery: "Save 10+ hrs/week",
+      recoverySub: "in operational firefighting during your first year by building systems before you open",
+      ctaHeadline: "Build Your Pre-Opening Operations Playbook",
+      ctaSub: "In a 45-minute session, we'll identify your top operational priorities and begin building the SOPs, training tools, and procedures that will make your opening — and every week after — run smoother.",
+      guarantee: "If we can't identify at least 5 operational systems you need before opening, you get your $97 back."
+    },
+    L: {
+      label: "Team & Staffing",
+      color: "#C0673A",
+      badgeStyle: "background:rgba(192,103,58,0.15);border:1px solid rgba(192,103,58,0.4);color:#E8906A;",
+      headline: "Your team strategy will make or break your first 90 days.",
+      sub: "Your answers point to staffing as your most important pre-opening priority. The people you hire first, how you train them, and what culture you build in the first 30 days becomes your restaurant's identity — for better or worse. Get this right before you open.",
+      diagLabel: "Primary Priority",
+      diagTitle: "Build Your Opening Team Strategy",
+      diagDesc: "First hires set culture. Opening shifts set standards. And the labor structure you build in month one becomes the default you manage for years. Investing in team structure, onboarding, and leadership before service starts pays dividends every single week.",
+      findings: [
+        { icon: "⚠️", text: "<strong>Hiring for talent without training for standards creates chaos.</strong> Even great employees can't succeed without a clear onboarding process, defined job roles, and documented expectations." },
+        { icon: "⚠️", text: "<strong>Your labor budget needs to be modeled before your first schedule.</strong> Without a labor cost target, new operators over-staff out of anxiety or under-staff out of frugality — both are expensive mistakes." },
+        { icon: "⚠️", text: "<strong>Culture is built in the first 30 days, not announced in a meeting.</strong> How you handle the first employee conflict, the first mistake, the first great performance — that's what your team learns from." },
+        { icon: "✅", text: "<strong>Pre-opening team investment pays off fast.</strong> A structured hiring process, a clear onboarding program, and a defined labor model built before opening can reduce your first-year turnover by 30–40% — saving $15,000–$40,000 in rehiring and retraining costs." }
+      ],
+      recovery: "$15K–$40K saved",
+      recoverySub: "in first-year rehiring and retraining costs with a strong pre-opening team strategy",
+      ctaHeadline: "Build Your Opening Team Plan",
+      ctaSub: "In a 45-minute session, we'll define your staffing model, build an onboarding framework, and establish the leadership structure that will make your team — and your culture — strong from day one.",
+      guarantee: "If we can't identify at least 3 team or staffing improvements you can make before opening, you get your $97 back."
+    },
+    S: {
+      label: "Concept & Strategy",
+      color: "#9B6CC9",
+      badgeStyle: "background:rgba(155,108,201,0.15);border:1px solid rgba(155,108,201,0.4);color:#C9A8F0;",
+      headline: "Your concept needs a sharper strategic foundation before you build on it.",
+      sub: "Your answers suggest the strategic layer — differentiation, positioning, and a clear business model — needs more definition before you move into execution. Opening without a clear answer to 'why will guests choose us over the alternatives' is one of the most common and costly mistakes in the restaurant business.",
+      diagLabel: "Primary Priority",
+      diagTitle: "Sharpen Your Concept Strategy",
+      diagDesc: "A great idea for a restaurant isn't enough. You need a clear positioning statement, a differentiated reason to choose you, and a business model that makes financial sense before you invest further. The good news: this can be defined in days, not months.",
+      findings: [
+        { icon: "⚠️", text: "<strong>Being 'good' is not differentiation.</strong> Every restaurant owner believes their food is good. The question is: what makes you the obvious choice for a specific guest in a specific moment? That answer drives every other decision." },
+        { icon: "⚠️", text: "<strong>Concept clarity affects every cost decision you'll make.</strong> Menu breadth, staffing model, location requirements, price point — all of these flow from a clearly defined concept. Unclear concept = expensive decisions." },
+        { icon: "⚠️", text: "<strong>The business model and the concept must align.</strong> A concept that requires low prices but high operational complexity is a financial trap. Aligning your concept with a profitable unit model is the foundation of a sustainable business." },
+        { icon: "✅", text: "<strong>Clarity now is exponentially cheaper than pivoting later.</strong> A sharp concept built before signing leases and hiring staff is worth more than any individual operational decision you'll make in year one." }
+      ],
+      recovery: "Avoid $20K–$100K+",
+      recoverySub: "in costly pivots and concept corrections by getting strategic clarity before you build",
+      ctaHeadline: "Sharpen Your Restaurant Concept",
+      ctaSub: "In a 45-minute strategy session, we'll define your positioning, stress-test your business model, and give you a clear strategic foundation to build every other decision on.",
+      guarantee: "If we can't identify at least 3 strategic blind spots that would cost you money after opening, you get your $97 back."
+    }
+  },
+
+  struggling: {
+    pillars: [
+      { key: 'P', label: 'Profit & Cost' },
+      { key: 'L', label: 'Labor & Team' },
+      { key: 'G', label: 'Guest Growth' },
+      { key: 'O', label: 'Operations' }
+    ],
+    P: {
+      label: "Profit & Cost Recovery",
+      color: "#C9A84C",
+      badgeStyle: "background:rgba(201,168,76,0.15);border:1px solid rgba(201,168,76,0.4);color:#F0C96A;",
+      headline: "Your restaurant has a profit leak — and it's fixable.",
+      sub: "Your answers point to a classic margin compression problem. Revenue is coming in, but too much of it is draining out through untracked food cost, unoptimized menu pricing, and P&L blind spots. The good news: this is the most recoverable problem in the restaurant business.",
+      diagLabel: "Primary Diagnosis",
+      diagTitle: "Margin Compression Syndrome",
+      diagDesc: "You're working hard and generating revenue — but the profit doesn't match the effort. This almost always comes down to three simultaneous leaks: menu items priced without margin math, food cost running 2–4% above where it should be, and labor that doesn't flex with volume.",
+      findings: [
+        { icon: "⚠️", text: "<strong>Menu pricing by feel, not math.</strong> Most independent restaurant owners have 3–5 items actively losing money. They keep them because guests order them — not knowing each order makes the P&L worse." },
+        { icon: "⚠️", text: "<strong>Food cost without a weekly system.</strong> Waiting until month-end to review food cost means you're always reacting, never preventing. The fix is a simple weekly variance check." },
+        { icon: "⚠️", text: "<strong>No P&L action cadence.</strong> Seeing the numbers monthly with an accountant isn't management — it's bookkeeping. Profitable restaurants have weekly KPI check-ins, not monthly surprises." },
+        { icon: "✅", text: "<strong>The upside is significant.</strong> Restaurants in this category typically recover $2,000–$5,000/month in margin within 60–90 days of implementing a proper cost control system." }
+      ],
+      recovery: "$2,000–$5,000/mo",
+      recoverySub: "estimated monthly margin recovery within 60–90 days of implementation",
+      ctaHeadline: "Find Your Profit Leaks — This Week",
+      ctaSub: "In a 45-minute working session, we'll review your actual P&L, identify your top 3 cost leaks by dollar value, and give you a written action plan to start recovering that money immediately.",
+      guarantee: "If I can't find at least $500/month in recoverable profit in your business, you get your $97 back."
+    },
+    L: {
+      label: "Labor & Team Performance",
+      color: "#C0673A",
+      badgeStyle: "background:rgba(192,103,58,0.15);border:1px solid rgba(192,103,58,0.4);color:#E8906A;",
+      headline: "Your labor is costing you more than it should — in dollars and energy.",
+      sub: "Your answers reveal a labor structure problem that's eating your margin and keeping you personally trapped. High turnover, inconsistent staffing, and owner dependency are the three most expensive labor problems in independent restaurants — and they compound each other.",
+      diagLabel: "Primary Diagnosis",
+      diagTitle: "Labor Dependency Loop",
+      diagDesc: "When labor isn't managed by a system, it's managed by whoever shows up. This creates a cycle: the owner works more to compensate, which prevents building real systems, which keeps turnover high, which means the owner keeps working more.",
+      findings: [
+        { icon: "⚠️", text: "<strong>Scheduling without a model.</strong> Most restaurant owners schedule based on who's available, not what the revenue forecast requires. A simple labor-to-sales model eliminates chronically over-staffed slow shifts and under-staffed busy ones." },
+        { icon: "⚠️", text: "<strong>Turnover hiding the real cost.</strong> The average cost of replacing a restaurant employee is $1,500–$3,500. High turnover is a direct profit killer masquerading as a people problem." },
+        { icon: "⚠️", text: "<strong>No second-in-command system.</strong> If the restaurant runs differently when you're not there, you don't have a business — you have a job that owns you." },
+        { icon: "✅", text: "<strong>Labor optimization has fast ROI.</strong> Restaurants in this category typically cut 2–4% off their labor percentage within 30–45 days of implementing a flex scheduling model — worth $800–$2,500/month in a typical operation." }
+      ],
+      recovery: "$1,500–$3,500/mo",
+      recoverySub: "estimated monthly recovery through labor optimization and reduced turnover costs",
+      ctaHeadline: "Fix Your Labor Problem — This Month",
+      ctaSub: "In a 45-minute working session, we'll review your schedule, staffing model, and team structure and identify exactly where your labor dollars are going — and how to cut the waste without cutting the people who matter.",
+      guarantee: "If I can't find at least $500/month in recoverable labor cost in your business, you get your $97 back."
+    },
+    G: {
+      label: "Guest Growth & Retention",
+      color: "#3A7AC0",
+      badgeStyle: "background:rgba(58,122,192,0.15);border:1px solid rgba(58,122,192,0.4);color:#7AB0E8;",
+      headline: "You're losing guests you already earned — and not replacing them fast enough.",
+      sub: "Your answers point to a guest retention and local marketing gap. The guests you're working so hard to serve aren't coming back at the rate they should — and new guest acquisition isn't filling the gap. This is costing you far more than most owners realize.",
+      diagLabel: "Primary Diagnosis",
+      diagTitle: "Guest Retention Gap",
+      diagDesc: "Acquiring a new restaurant guest costs 5–7× more than retaining an existing one. Most independent restaurants have no formal system for either — they serve guests beautifully and then let them disappear. A structured retention engine changes the economics of your entire operation.",
+      findings: [
+        { icon: "⚠️", text: "<strong>No repeat-visit system.</strong> Word of mouth is real — but it's not a strategy. Restaurants that grow consistently have a deliberate mechanism to bring guests back." },
+        { icon: "⚠️", text: "<strong>Google reputation is your #1 local marketing asset.</strong> A 3.8-star restaurant and a 4.4-star restaurant are not competing for the same guests — even if the food is identical." },
+        { icon: "⚠️", text: "<strong>Social media without strategy is noise.</strong> Posting food photos without a guest journey attached rarely moves revenue." },
+        { icon: "✅", text: "<strong>Guest retention has compounding ROI.</strong> Increasing repeat visit rate by 10% in a restaurant doing $50K/month is worth $5,000+/month in additional revenue — with zero new marketing spend." }
+      ],
+      recovery: "$2,500–$6,000/mo",
+      recoverySub: "estimated monthly revenue growth from improved guest retention and local marketing",
+      ctaHeadline: "Build Your Guest Retention Engine",
+      ctaSub: "In a 45-minute working session, we'll identify exactly where guests are dropping off, build a retention strategy specific to your restaurant type, and give you a 30-day action plan to start bringing them back.",
+      guarantee: "If I can't identify at least 3 guest retention improvements worth $500+/month, you get your $97 back."
+    },
+    O: {
+      label: "Operations & Systems",
+      color: "#5A9E5A",
+      badgeStyle: "background:rgba(90,158,90,0.15);border:1px solid rgba(90,158,90,0.4);color:#90CC90;",
+      headline: "Your restaurant is running you — instead of the other way around.",
+      sub: "Your answers reveal a systems and consistency problem. When a restaurant runs differently depending on who's working or whether the owner is present, it's a signal that the operation is built around people reacting — not systems producing reliable results.",
+      diagLabel: "Primary Diagnosis",
+      diagTitle: "Systemless Operation Syndrome",
+      diagDesc: "Most independent restaurants were built on passion and hard work — and those things got you open. But scaling and becoming profitable requires a different ingredient: documented, trainable, repeatable systems that work without the owner having to be the system.",
+      findings: [
+        { icon: "⚠️", text: "<strong>No operations playbook.</strong> If your standards exist only in your head, they can't be enforced, trained, or scaled. Every procedure in your head is a business risk — and a reason you can't take a day off." },
+        { icon: "⚠️", text: "<strong>Inconsistency is costing you guest loyalty.</strong> Guests don't grade you on their best visit — they grade you on their worst. Inconsistent quality drives one-time visits instead of regulars." },
+        { icon: "⚠️", text: "<strong>Every new hire starts from scratch.</strong> Without a training system, every employee reinvents the wheel. This drives up training time and creates quality gaps that show up in reviews." },
+        { icon: "✅", text: "<strong>Systems create freedom and scalability.</strong> Restaurants that operate on documented systems run better when the owner steps out, hold staff more accountable, and become dramatically easier to grow or sell." }
+      ],
+      recovery: "$1,800–$4,500/mo",
+      recoverySub: "estimated monthly recovery through waste reduction, consistency, and labor efficiency from systemization",
+      ctaHeadline: "Build the Systems That Free You",
+      ctaSub: "In a 45-minute working session, we'll diagnose your biggest operational gaps and give you a practical plan to build the procedures, checklists, and leadership tools that make your restaurant run without you holding it together.",
+      guarantee: "If I can't identify at least 3 operational improvements worth $500+/month, you get your $97 back."
+    }
+  },
+
+  scaling: {
+    pillars: [
+      { key: 'P', label: 'Margin Optimization' },
+      { key: 'G', label: 'Revenue Growth' },
+      { key: 'L', label: 'Leadership & Team' },
+      { key: 'O', label: 'Systems & Scale' },
+      { key: 'S', label: 'Expansion Strategy' }
+    ],
+    P: {
+      label: "Margin Optimization",
+      color: "#C9A84C",
+      badgeStyle: "background:rgba(201,168,76,0.15);border:1px solid rgba(201,168,76,0.4);color:#F0C96A;",
+      headline: "You're profitable — but your margins probably have 3–5 more points in them.",
+      sub: "Your answers point to margin optimization as your highest-leverage opportunity. When a well-run restaurant does a deep cost analysis, it almost always finds recoverable profit that's been hiding in plain sight — often worth more than any new revenue initiative.",
+      diagLabel: "Growth Opportunity",
+      diagTitle: "Margin Optimization at Scale",
+      diagDesc: "At your revenue level, every percentage point of margin improvement is worth real money. A 2% food cost improvement on $100K/month in revenue is $2,000/month — $24,000/year — falling straight to the bottom line. And that's before touching labor.",
+      findings: [
+        { icon: "💡", text: "<strong>Menu engineering at scale multiplies fast.</strong> Identifying your top 5 margin-drag menu items and adjusting pricing or mix can recover $1,500–$4,000/month with no change in guest experience." },
+        { icon: "💡", text: "<strong>Vendor renegotiation is often untouched.</strong> Restaurants that have grown significantly often haven't renegotiated food or supply contracts in years. Volume you've built has negotiating power you haven't used." },
+        { icon: "💡", text: "<strong>Labor efficiency unlocked at your stage looks different.</strong> It's not about cutting staff — it's about building a scheduling model that scales with volume, not headcount, and a management structure that reduces owner labor cost." },
+        { icon: "✅", text: "<strong>The ROI on margin work is immediate and compounding.</strong> Recovered margin doesn't need marketing spend to generate — it just requires analysis and implementation. Restaurants in your category typically find $2,000–$6,000/month in recoverable profit in a single deep audit." }
+      ],
+      recovery: "$2,000–$6,000/mo",
+      recoverySub: "estimated additional monthly profit recoverable through margin optimization at your revenue level",
+      ctaHeadline: "Find Your Hidden Margin",
+      ctaSub: "In a 45-minute working session, we'll review your P&L, menu mix, and cost structure and identify exactly where your next $2,000–$6,000/month in profit is sitting — before you invest in any new growth initiative.",
+      guarantee: "If I can't find at least $1,000/month in recoverable margin at your revenue level, you get your $97 back."
+    },
+    G: {
+      label: "Revenue Growth",
+      color: "#3A7AC0",
+      badgeStyle: "background:rgba(58,122,192,0.15);border:1px solid rgba(58,122,192,0.4);color:#7AB0E8;",
+      headline: "You have the foundation to grow revenue significantly — with the right strategy.",
+      sub: "Your answers point to a clear revenue growth opportunity. You have the operations and guest base to support more revenue — the gap is in activating untapped channels: higher check averages, catering and events, loyalty mechanics, and strategic local marketing.",
+      diagLabel: "Growth Opportunity",
+      diagTitle: "Untapped Revenue Activation",
+      diagDesc: "Profitable restaurants often underestimate how much additional revenue is available from their existing guest base and physical footprint. Catering, private events, loyalty programs, and upsell systems consistently generate 15–35% revenue lifts without opening new locations.",
+      findings: [
+        { icon: "💡", text: "<strong>Catering is often the highest-margin revenue stream available.</strong> A restaurant doing $80K/month in dine-in revenue can often add $10K–$25K/month in catering within 90 days of building a proper program." },
+        { icon: "💡", text: "<strong>Average check growth is pure margin improvement.</strong> Systematic upsell training and menu design changes that increase average check by $3–$5/guest translate directly to the bottom line — no new marketing spend required." },
+        { icon: "💡", text: "<strong>Private events monetize your space during off-peak times.</strong> Most restaurants have dead hours on Tuesday evenings or Sunday afternoons. Event programming turns those into premium revenue." },
+        { icon: "✅", text: "<strong>Your existing reputation is your best marketing asset.</strong> A restaurant with strong reviews and a loyal guest base can grow revenue 20–40% through activation of existing relationships — before spending a dollar on paid advertising." }
+      ],
+      recovery: "$5,000–$20,000/mo",
+      recoverySub: "estimated monthly revenue growth from activating catering, events, upselling, and loyalty programs",
+      ctaHeadline: "Build Your Revenue Growth Plan",
+      ctaSub: "In a 45-minute strategy session, we'll identify your top 3 revenue growth opportunities — whether catering, events, check average, or loyalty — and build a 90-day activation plan with clear revenue targets.",
+      guarantee: "If I can't identify at least $2,000/month in new revenue opportunity, you get your $97 back."
+    },
+    L: {
+      label: "Leadership & Team Development",
+      color: "#C0673A",
+      badgeStyle: "background:rgba(192,103,58,0.15);border:1px solid rgba(192,103,58,0.4);color:#E8906A;",
+      headline: "Your next growth stage requires leaders, not just good employees.",
+      sub: "Your answers point to leadership development as the key constraint on your growth. At this stage, the bottleneck isn't operations or marketing — it's building a management layer that can run the business at your standards without you in the building every day.",
+      diagLabel: "Growth Opportunity",
+      diagTitle: "Building Your Leadership Layer",
+      diagDesc: "The transition from great operator to great business owner requires one critical shift: building people who think and act like owners, not employees. This is the work that unlocks growth, protects your margins, and makes eventual expansion or exit possible.",
+      findings: [
+        { icon: "💡", text: "<strong>A strong GM is worth $8,000–$15,000/month in owner time freed.</strong> When your GM can truly run the business, you can focus on growth, additional locations, or profitability work that has much higher ROI than your daily presence in operations." },
+        { icon: "💡", text: "<strong>Leadership development is a multiplier on every other investment.</strong> Great managers reduce turnover, improve guest experience, catch cost problems earlier, and scale your culture — all simultaneously." },
+        { icon: "💡", text: "<strong>Most GMs are promoted, not developed.</strong> Your best shift leader may be excellent at operations and untrained in leadership. Building a leadership development program is what separates restaurants that scale from those that plateau." },
+        { icon: "✅", text: "<strong>The right leadership structure is the prerequisite for a second location.</strong> Before you can duplicate your restaurant, you need a management model that runs without you. Build that here first — then scaling becomes replicable." }
+      ],
+      recovery: "Unlock your next location",
+      recoverySub: "a strong leadership layer is the prerequisite for every growth milestone beyond your first restaurant",
+      ctaHeadline: "Build Your Leadership Development Plan",
+      ctaSub: "In a 45-minute working session, we'll assess your current management team, identify leadership gaps, and build a development roadmap that prepares your team — and your business — for the next stage of growth.",
+      guarantee: "If I can't identify at least 3 leadership development priorities that would materially impact your growth, you get your $97 back."
+    },
+    O: {
+      label: "Systems & Scalability",
+      color: "#5A9E5A",
+      badgeStyle: "background:rgba(90,158,90,0.15);border:1px solid rgba(90,158,90,0.4);color:#90CC90;",
+      headline: "Your systems need to be ready for scale before you scale.",
+      sub: "Your answers point to operational infrastructure as the bottleneck on your growth. You can't duplicate what you haven't documented. Before adding locations, revenue streams, or team members, your operational playbook needs to be sharp enough to hand someone else.",
+      diagLabel: "Growth Opportunity",
+      diagTitle: "Scale-Ready Operations",
+      diagDesc: "Scaling a restaurant that runs on the owner's tribal knowledge is a recipe for expensive chaos. But scaling a restaurant with documented systems, trained management, and measurable standards is a proven and repeatable process.",
+      findings: [
+        { icon: "💡", text: "<strong>Documentation is the asset that makes expansion possible.</strong> Every process in your head that isn't written down is a barrier to growth. Your operations playbook is the intellectual property of your business." },
+        { icon: "💡", text: "<strong>Scale reveals every system weakness simultaneously.</strong> Problems that are manageable at one location become expensive crises at two. The time to fix operational gaps is before you multiply them." },
+        { icon: "💡", text: "<strong>Consistency at scale drives brand value.</strong> Restaurants that grow to multiple units successfully have one thing in common: a guest experience that's reliably consistent regardless of location or shift. That comes from systems, not supervision." },
+        { icon: "✅", text: "<strong>Your operational knowledge is more valuable than you think.</strong> Everything you've learned running a profitable restaurant has dollar value. The work of systematizing it creates a scalable business — and an eventual asset you can sell." }
+      ],
+      recovery: "Scale without chaos",
+      recoverySub: "documented systems are the foundation that makes every growth milestone — new locations, revenue streams, team expansion — executable",
+      ctaHeadline: "Build Your Scale-Ready Operations Plan",
+      ctaSub: "In a 45-minute working session, we'll audit your operational documentation, identify the systems gaps that would limit your growth, and build a plan to get your playbook scale-ready.",
+      guarantee: "If I can't identify at least 5 operational gaps that would limit your growth, you get your $97 back."
+    },
+    S: {
+      label: "Expansion Strategy",
+      color: "#9B6CC9",
+      badgeStyle: "background:rgba(155,108,201,0.15);border:1px solid rgba(155,108,201,0.4);color:#C9A8F0;",
+      headline: "You're ready to grow — and the right strategy will make the difference.",
+      sub: "Your answers point to strategic expansion as your primary opportunity. You have a working model, a profitable operation, and the ambition to grow. What you need now is a clear, deliberate strategy — not just momentum.",
+      diagLabel: "Growth Opportunity",
+      diagTitle: "Strategic Expansion Planning",
+      diagDesc: "The difference between restaurants that scale successfully and those that plateau or fail in expansion isn't concept or capital — it's strategy. A clear expansion roadmap, the right sequencing, and the right financial model makes the difference between growth that compounds and growth that consumes.",
+      findings: [
+        { icon: "💡", text: "<strong>Second locations fail for specific, predictable reasons.</strong> Premature expansion, undercapitalization, and copying the owner's presence instead of the system are the top three. All are avoidable with the right preparation." },
+        { icon: "💡", text: "<strong>Your unit economics need to be optimized before you multiply them.</strong> A second location makes your margin problems twice as expensive. A second location built on strong margins compounds your success." },
+        { icon: "💡", text: "<strong>Brand positioning becomes a competitive asset at scale.</strong> Growing to multiple units without a deliberate brand strategy creates confusion for guests and inconsistency in culture. Clarity now pays at every location." },
+        { icon: "✅", text: "<strong>Intentional expansion beats reactive expansion every time.</strong> The restaurants that grow to 3, 5, 10 locations with strong margins built a deliberate growth strategy first — then executed it with discipline." }
+      ],
+      recovery: "2x–5x revenue potential",
+      recoverySub: "with a well-structured expansion strategy built on your current profitable model",
+      ctaHeadline: "Build Your Expansion Roadmap",
+      ctaSub: "In a 45-minute strategy session, we'll assess your current operation's readiness for expansion, identify the gaps you need to close first, and build a clear sequenced growth plan with financial targets.",
+      guarantee: "If I can't identify at least 3 strategic priorities that would materially improve your expansion odds, you get your $97 back."
+    }
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────────────────────────
+let selectedStage = null;
+let currentQ = 0;
+let answers = [];
+
+const stageLabels = {
+  startup: { pill: '🌱 Pre-Opening / Year 1', loading: 'Building your launch plan…', loadingSub: 'Reviewing your answers across key startup pillars' },
+  struggling: { pill: '🔧 Open & Working Through Challenges', loading: 'Analyzing your restaurant…', loadingSub: 'Reviewing your answers across the key profit pillars' },
+  scaling: { pill: '🚀 Scaling & Growth', loading: 'Building your growth strategy…', loadingSub: 'Reviewing your answers across the key growth pillars' }
+};
+
+function selectStage(stage) {
+  selectedStage = stage;
+  document.querySelectorAll('.stage-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('stage-' + stage).classList.add('selected');
+  document.getElementById('btn-start').disabled = false;
+}
+
+function startAssessment() {
+  if (!selectedStage) return;
+  answers = new Array(questionBanks[selectedStage].length).fill(null);
+  currentQ = 0;
+  document.getElementById('screen-stage').classList.add('hidden');
+  document.getElementById('screen-questions').classList.remove('hidden');
+  document.getElementById('stage-pill').textContent = stageLabels[selectedStage].pill;
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const qs = questionBanks[selectedStage];
+  const q = qs[currentQ];
+  const pct = Math.round(((currentQ + 1) / qs.length) * 100);
+
+  document.getElementById('progress-text').textContent = `${currentQ + 1} of ${qs.length}`;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('q-number').textContent = `Question ${currentQ + 1}`;
+  document.getElementById('q-text').textContent = q.text;
+
+  const isLast = currentQ === qs.length - 1;
+  document.getElementById('btn-next').textContent = isLast ? 'See My Results →' : 'Next →';
+
+  const letters = ['A','B','C','D'];
+  document.getElementById('q-options').innerHTML = q.options.map((opt, i) => `
+    <button class="option${answers[currentQ] === i ? ' selected' : ''}" onclick="selectOption(${i})" aria-pressed="${answers[currentQ] === i}">
+      <span class="option-letter">${letters[i]}</span>
+      <span class="option-text">${opt.text}</span>
+    </button>
+  `).join('');
+
+  const card = document.getElementById('q-card');
+  card.style.animation = 'none';
+  card.offsetHeight;
+  card.style.animation = '';
+
+  document.getElementById('btn-back').disabled = currentQ === 0;
+  document.getElementById('btn-next').disabled = answers[currentQ] === null;
+}
+
+function selectOption(idx) {
+  answers[currentQ] = idx;
+  document.querySelectorAll('.option').forEach((el, i) => {
+    el.classList.toggle('selected', i === idx);
+    el.setAttribute('aria-pressed', i === idx);
+  });
+  document.getElementById('btn-next').disabled = false;
+}
+
+function goNext() {
+  if (answers[currentQ] === null) return;
+  const qs = questionBanks[selectedStage];
+  if (currentQ < qs.length - 1) {
+    currentQ++;
+    renderQuestion();
+  } else {
+    showLoading();
+  }
+}
+
+function goBack() {
+  if (currentQ > 0) { currentQ--; renderQuestion(); }
+}
+
+// ─────────────────────────────────────────────────────────────────
+// SCORING
+// ─────────────────────────────────────────────────────────────────
+let lastResult = null; // store for email / PDF use
+
+function computeResult() {
+  const tally = { P: 0, L: 0, G: 0, O: 0, S: 0 };
+  const qs = questionBanks[selectedStage];
+  answers.forEach((ansIdx, qIdx) => {
+    if (ansIdx !== null) {
+      const cat = qs[qIdx].options[ansIdx].cat;
+      tally[cat]++;
+    }
+  });
+  let winner = 'P';
+  Object.keys(tally).forEach(k => { if (tally[k] > tally[winner]) winner = k; });
+  return { tally, winner };
+}
+
+function showLoading() {
+  document.getElementById('screen-questions').classList.add('hidden');
+  document.getElementById('screen-loading').classList.remove('hidden');
+  document.getElementById('loading-text').textContent = stageLabels[selectedStage].loading;
+  document.getElementById('loading-sub').textContent = stageLabels[selectedStage].loadingSub;
+  setTimeout(showResult, 2200);
+}
+
+function showResult() {
+  document.getElementById('screen-loading').classList.add('hidden');
+  document.getElementById('screen-result').classList.remove('hidden');
+
+  const { tally, winner } = computeResult();
+  const stageCats = resultData[selectedStage];
+  const cat = stageCats[winner];
+  const pillars = stageCats.pillars;
+  const total = Object.values(tally).reduce((a, b) => a + b, 0);
+
+  // Build score breakdown text for email
+  const scoreLines = pillars.map(p => {
+    const pct = total > 0 ? Math.round(((tally[p.key] || 0) / total) * 100) : 0;
+    return `${p.label}: ${pct}%`;
+  }).join('\n');
+
+  // Build answers summary for email
+  const qs = questionBanks[selectedStage];
+  const answerLines = answers.map((ansIdx, qIdx) => {
+    if (ansIdx === null) return '';
+    return `Q${qIdx + 1}: ${qs[qIdx].text}\n→ ${qs[qIdx].options[ansIdx].text}`;
+  }).filter(Boolean).join('\n\n');
+
+  // Store for bookScorecard / downloadPDF
+  lastResult = {
+    stage: stageLabels[selectedStage].pill,
+    topCategory: cat.label,
+    headline: cat.headline,
+    diagTitle: cat.diagTitle,
+    opportunity: cat.recovery,
+    scoreLines,
+    answerLines
+  };
+
+  // Render UI
+  document.getElementById('result-badge').textContent = cat.label;
+  document.getElementById('result-badge').setAttribute('style', cat.badgeStyle);
+  document.getElementById('result-headline').textContent = cat.headline;
+  document.getElementById('result-sub').textContent = cat.sub;
+
+  document.getElementById('score-bars').innerHTML = pillars.map(p => {
+    const pct = total > 0 ? Math.round(((tally[p.key] || 0) / total) * 100) : 0;
+    const col = stageCats[p.key] ? stageCats[p.key].color : '#888';
+    return `
+      <div class="score-row">
+        <span class="score-label">${p.label}</span>
+        <div class="score-track"><div class="score-bar-fill" data-width="${pct}" style="background:${col}"></div></div>
+        <span class="score-pct">${pct}%</span>
+      </div>`;
+  }).join('');
+
+  requestAnimationFrame(() => {
+    document.querySelectorAll('.score-bar-fill').forEach(el => {
+      el.style.width = el.dataset.width + '%';
+    });
+  });
+
+  document.getElementById('diag-label').textContent = cat.diagLabel;
+  document.getElementById('diag-label').style.color = cat.color;
+  document.getElementById('diag-title').textContent = cat.diagTitle;
+  document.getElementById('diag-desc').textContent = cat.diagDesc;
+
+  document.getElementById('diag-findings').innerHTML = cat.findings.map(f => `
+    <div class="finding-item">
+      <span class="finding-icon">${f.icon}</span>
+      <span class="finding-text">${f.text}</span>
+    </div>`).join('');
+
+  document.getElementById('recovery-amount').textContent = cat.recovery;
+  document.getElementById('recovery-sub').textContent = cat.recoverySub;
+  document.getElementById('cta-headline').textContent = cat.ctaHeadline;
+  document.getElementById('cta-sub').textContent = cat.ctaSub;
+  document.getElementById('cta-guarantee').textContent = cat.guarantee;
+}
+
+function restart() {
+  selectedStage = null;
+  currentQ = 0;
+  answers = [];
+  lastResult = null;
+  document.querySelectorAll('.stage-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('btn-start').disabled = true;
+  document.getElementById('screen-result').classList.add('hidden');
+  document.getElementById('screen-stage').classList.remove('hidden');
+  document.getElementById('field-name').value = '';
+  document.getElementById('field-email').value = '';
+  document.getElementById('field-restaurant').value = '';
+  setEmailStatus('', '');
+}
+
+// ─────────────────────────────────────────────────────────────────
+// EMAIL + BOOKING
+// ─────────────────────────────────────────────────────────────────
+emailjs.init('za2A9coA25cEYppp');
+
+function setEmailStatus(type, msg) {
+  const el = document.getElementById('email-status');
+  el.className = 'email-status' + (type ? ' ' + type : '');
+  el.textContent = msg;
+}
+
+function getFormValues() {
+  return {
+    name: document.getElementById('field-name').value.trim(),
+    email: document.getElementById('field-email').value.trim(),
+    restaurant: document.getElementById('field-restaurant').value.trim()
+  };
+}
+
+function sendResultsEmail(name, email, restaurant) {
+  if (!lastResult) return Promise.resolve();
+
+  const templateParams = {
+    client_name:     name || 'Not provided',
+    client_email:    email || 'Not provided',
+    restaurant_name: restaurant || 'Not provided',
+    stage:           lastResult.stage,
+    top_category:    lastResult.topCategory,
+    opportunity:     lastResult.opportunity,
+    score_breakdown: lastResult.scoreLines,
+    answers_summary: lastResult.answerLines
+  };
+
+  return emailjs.send('service_gzjsw3m', 'template_uhhn4yx', templateParams);
+}
+
+async function bookScorecard() {
+  const { name, email, restaurant } = getFormValues();
+
+  if (!name || !email || !restaurant) {
+    setEmailStatus('error', 'Please fill in your name, email, and restaurant name before booking.');
+    document.getElementById('field-name').focus();
+    return;
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    setEmailStatus('error', 'Please enter a valid email address.');
+    return;
+  }
+
+  setEmailStatus('sending', 'Sending your results… opening calendar…');
+
+  try {
+    await sendResultsEmail(name, email, restaurant);
+    setEmailStatus('success', '✓ Results sent! Opening your booking calendar now…');
+    setTimeout(() => {
+      window.open('https://calendar.app.google/ZrgiwybBu7ceCbFL6', '_blank');
+    }, 800);
+  } catch (err) {
+    console.error('EmailJS error:', err);
+    setEmailStatus('error', 'Could not send results email, but opening your calendar anyway.');
+    setTimeout(() => {
+      window.open('https://calendar.app.google/ZrgiwybBu7ceCbFL6', '_blank');
+    }, 1200);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────
+// PDF DOWNLOAD
+// ─────────────────────────────────────────────────────────────────
+function downloadPDF() {
+  const { name, restaurant } = getFormValues();
+  const metaEl = document.getElementById('print-meta');
+  const parts = [];
+  if (name) parts.push(name);
+  if (restaurant) parts.push(restaurant);
+  parts.push('Assessment Results · Restaurant Revival');
+  metaEl.textContent = parts.join(' · ');
+  window.print();
+}
+
+</script>
+</body>
+</html>
